@@ -27,6 +27,18 @@ isis_init(node_t *node) {
 
 void
 isis_de_init(node_t *node){
+
+	/*
+	Check if there are interfaces where isis is enabled.
+	Disable isis in all interfaces.
+	*/
+	interface_t *interface = NULL;
+	ITERATE_NODE_INTERFACES_BEGIN(node,interface){
+		isis_disable_protocol_on_interface(interface);
+					
+	}ITERATE_NODE_INTERFACES_END(node,interface);
+	
+	
 	isis_node_info_t *isis_node_info = ISIS_NODE_INFO(node);
 	
 	if(!isis_node_info) return;

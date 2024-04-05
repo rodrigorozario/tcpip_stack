@@ -78,3 +78,9 @@ conf node R0 no protocol isis
 show node R0 protocol isis
 conf node R0 no protocol isis interface all
 show node R0 protocol isis
+.
+conf node R0 protocol isis
+config node R0 protocol isis interface all
+show node R0 protocol isis
+conf node R0 no protocol isis
+show node R0 protocol isis
