@@ -44,5 +44,8 @@ isis_start_sending_hellos(interface_t *intf);
 void
 isis_stop_sending_hellos(interface_t *intf);
 
+bool
+isis_interface_qualify_to_send_hellos(interface_t *intf);
+
 
 #endif

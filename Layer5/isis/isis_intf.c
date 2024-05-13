@@ -41,6 +41,10 @@ isis_enable_protocol_on_interface(interface_t *intf){
 		isis_init_isis_intf_info(intf);
 	}
 	
+	if(isis_interface_qualify_to_send_hellos(intf)){
+		
+		isis_start_sending_hellos(intf);
+	}
 
 }
 
@@ -52,6 +56,8 @@ isis_disable_protocol_on_interface(interface_t *intf){
 	intf_info = ISIS_INTF_INFO(intf);
 	
 	if(!intf_info) return;
+	
+	isis_stop_sending_hellos(intf);
 	
 	free(intf_info);
 	
@@ -94,6 +100,7 @@ void
 isis_start_sending_hellos(interface_t *intf){
 
 	node_t *node;
+	node = intf->att_node;
 	uint32_t hello_pkt_size;
 	
 	assert(ISIS_INTF_HELLO_XMIT_TIMER(intf) == NULL);
@@ -139,6 +146,22 @@ isis_stop_sending_hellos(interface_t *intf){
 	timer_de_register_app_event(hello_xmit_timer);
 	
 	ISIS_INTF_HELLO_XMIT_TIMER(intf) = NULL;
+	
+}
+
+
+bool
+isis_interface_qualify_to_send_hellos(interface_t *intf){
+	
+	bool isis_enabled = isis_node_intf_is_enabled(intf);
+	bool if_up = IF_IS_UP(intf);
+	bool if_l3  = IS_INTF_L3_MODE(intf);
+	
+	if(isis_enabled && if_up && if_l3){
+		return true;
+	} else {
+		return false;
+	}
 	
 }
 
