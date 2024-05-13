@@ -9,6 +9,13 @@ typedef struct isis_node_info_{
 
 } isis_node_info_t;
 
+typedef struct isis_timer_data_ {
+
+	node_t *node;
+	interface_t *intf;
+	void *data;
+	size_t data_size;
+} isis_timer_data_t;
 
 bool
 isis_is_protocol_enable_on_node(node_t *node);
