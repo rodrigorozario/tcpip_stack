@@ -5,15 +5,20 @@
 
 bool
 isis_pkt_trap_rule(char *pkt, size_t pkt_size){
+	//printf("this is trap rule begining...\n"); 
 	ethernet_hdr_t *eth_hdr = (ethernet_hdr_t *)pkt;
 	
-	return eth_hdr->type == ISIS_ETH_PKT_TYPE;
+	eth_hdr->type == ISIS_ETH_PKT_TYPE;
+	
+	//printf("this is trap rule ending...\n ISIS_ETH_PKT_TYPE: %d\n", eth_hdr->type);
+	return eth_hdr->type;
 
 }
 
 void
 isis_pkt_receive(void *arg, size_t arg_size){
-	printf("%s() invoked\n");
+ 
+	printf("%s() invoked\n", __FUNCTION__);
 
 }
 

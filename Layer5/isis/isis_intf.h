@@ -27,7 +27,7 @@ typedef struct isis_intf_info_ {
 	((isis_intf_info_t *)((intf_ptr)->intf_nw_props.isis_intf_info))->hello_xmit_timer)
 
 bool
-isis_node_intf_is_enable(interface_t *intf);
+isis_node_intf_is_enabled(interface_t *intf);
 
 void
 isis_enable_protocol_on_interface(interface_t *intf);
@@ -46,6 +46,9 @@ isis_stop_sending_hellos(interface_t *intf);
 
 bool
 isis_interface_qualify_to_send_hellos(interface_t *intf);
+
+void 
+isis_show_intf_protocol_state(interface_t *intf);
 
 
 #endif

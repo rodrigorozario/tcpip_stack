@@ -31,15 +31,9 @@ isis_enable_protocol_on_interface(interface_t *intf){
 	
 	intf_info = calloc(1,sizeof(isis_intf_info_t));
 	intf->intf_nw_props.isis_intf_info = intf_info;
+	isis_init_isis_intf_info(intf);
 	
-	isis_intf_info_t *isis_intf_info = NULL;
-	
-	isis_intf_info = ISIS_INTF_INFO(intf);
-	if(!isis_intf_info){
-		isis_intf_info = calloc(1,sizeof(isis_intf_info_t));
-		intf->intf_nw_props.isis_intf_info = isis_intf_info;
-		isis_init_isis_intf_info(intf);
-	}
+
 	
 	if(isis_interface_qualify_to_send_hellos(intf)){
 		
@@ -84,6 +78,7 @@ static void
 isis_transmit_hello(void *arg, uint32_t arg_size){
 	
 	if(!arg) return;
+	//printf("Sending hello!\n");
 	
 	isis_timer_data_t *isis_timer_data = (isis_timer_data_t *)arg;
 	
@@ -94,19 +89,34 @@ isis_transmit_hello(void *arg, uint32_t arg_size){
 	
 	send_pkt_out(hello_pkt, pkt_size,intf);
 	
+	//printf("hello sent!\n");
+	
 }
 
 void
 isis_start_sending_hellos(interface_t *intf){
 
-	node_t *node;
-	node = intf->att_node;
+	//node_t *node;
+	//node = intf->att_node;
 	uint32_t hello_pkt_size;
 	
 	assert(ISIS_INTF_HELLO_XMIT_TIMER(intf) == NULL);
 	assert(isis_node_intf_is_enabled(intf));
 	
 	wheel_timer_t *wt = node_get_timer_instance(intf->att_node);
+	
+	/* calculating hello_pkt_size */
+	
+	uint32_t eth_hdr_payload_size = sizeof(isis_pkt_hdr_t) + 
+		(TLV_OVERHEAD_SIZE * 6) + NODE_NAME_SIZE +
+		4 +
+		4 +
+		4 +
+		4 +
+		4;
+	
+	hello_pkt_size = ETH_HDR_SIZE_EXCL_PAYLOAD +
+			eth_hdr_payload_size;
 	
 	byte *hello_pkt = isis_prepare_hello_pkt(intf,&hello_pkt_size);
 	
@@ -117,7 +127,8 @@ isis_start_sending_hellos(interface_t *intf){
 	isis_timer_data->data = (void *)hello_pkt;
 	isis_timer_data->data_size = hello_pkt_size;
 	
-	timer_register_app_event(wt,
+	
+	ISIS_INTF_HELLO_XMIT_TIMER(intf) = timer_register_app_event(wt,
 							 isis_transmit_hello,
 							 (void *)isis_timer_data,
 							 sizeof(isis_timer_data_t),
