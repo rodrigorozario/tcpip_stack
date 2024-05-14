@@ -56,6 +56,10 @@ typedef struct isis_adjacency_ {
 	
 	/* Delete timer */
 	timer_event_handle *delete_timer;
+	
+	/* Nbr mac address*/
+	mac_add_t nbr_mac; 
+	
 } isis_adjacency_t;
 
 

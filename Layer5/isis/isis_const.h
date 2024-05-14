@@ -17,5 +17,6 @@
 #define ISIS_TLV_HOLD_TIME  5
 #define ISIS_TLV_METRIC_VAL 6
 #define ISIS_TLV_IF_INDEX   4 //AS PER STANDARD
+#define ISIS_TLV_IF_MAC  131
 
 #endif
