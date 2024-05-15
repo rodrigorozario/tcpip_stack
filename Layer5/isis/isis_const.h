@@ -19,4 +19,6 @@
 #define ISIS_TLV_IF_INDEX   4 //AS PER STANDARD
 #define ISIS_TLV_IF_MAC  131
 
+#define ISIS_CONFIG_TRACE "ISIS(CONFIG)"
+
 #endif

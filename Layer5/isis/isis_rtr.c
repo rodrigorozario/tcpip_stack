@@ -2,6 +2,8 @@
 #include "isis_rtr.h"
 #include "isis_pkt.h"
 #include "isis_intf.h"
+#include "isis_const.h"
+#include "isis_adjacency.h"
 
 bool
 isis_is_protocol_enable_on_node(node_t *node){
@@ -56,5 +58,29 @@ isis_de_init(node_t *node){
 
 void isis_show_node_protocol_state(node_t *node){
 	printf("ISIS Protocol: %s\n", isis_is_protocol_enable_on_node(node) ? "Enable" : "Disable");
+	
+	interface_t *interface = NULL;
+	ITERATE_NODE_INTERFACES_BEGIN(node,interface){
+		printf("%s : %s", interface->if_name, isis_node_intf_is_enabled(interface) ? "Enable\n" : "Disable\n");
+		isis_show_interface_protocol_state(interface);
+		
+		isis_intf_info_t *isis_intf_info = ISIS_INTF_INFO(interface);
+		isis_adjacency_t *adjacency = isis_intf_info->adjacency;
+		
+		PRINT_TABS(1)
+		printf("Adjacencies:\n");
+		isis_show_adjacency(adjacency, 2);
+					
+	}ITERATE_NODE_INTERFACES_END(node,interface);
 
 }
+
+void
+isis_one_time_registration(){
+	
+	nfc_register_for_pkt_tracing(ISIS_ETH_PKT_TYPE, isis_print_pkt);
+}
+
+
+
+

@@ -34,6 +34,13 @@ isis_prepare_hello_pkt(interface_t *intf,size_t *hello_pkt_size);
 static uint32_t
 isis_print_hello_pkt (byte *buff, isis_pkt_hdr_t *hello_pkt_hdr, uint32_t pkt_size );
 
+static uint32_t
+isis_print_lsp_pkt(byte *buff, isis_pkt_hdr_t *hello_pkt_hdr, uint32_t pkt_size );
 
+void
+isis_print_pkt(void *arg, size_t arg_size);
+
+static void
+isis_process_hello_pkt(node_t *node, interface_t *iif, ethernet_hdr_t *hello_eth_hdr, size_t pkt_size);
 
 #endif

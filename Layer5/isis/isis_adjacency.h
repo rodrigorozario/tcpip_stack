@@ -74,4 +74,13 @@ typedef struct isis_adjacency_ {
 	
 //} isis_intf_info_t; 
 
+void
+isis_update_interface_adjacency_from_hello(interface_t *iff,byte *hello_tlv_buffer,size_t tlb_buff_size);
+
+
+void
+isis_show_adjacency( isis_adjacency_t *adjacency, uint8_t tab_spaces);
+
+
+
 #endif

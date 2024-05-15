@@ -33,6 +33,8 @@ isis_enable_protocol_on_interface(interface_t *intf){
 	intf->intf_nw_props.isis_intf_info = intf_info;
 	isis_init_isis_intf_info(intf);
 	
+	sprintf(tlb, "%s : protocol is enabled on interface\n", ISIS_CONFIG_TRACE);
+	tcp_trace(intf->att_node,intf,tlb);
 
 	
 	if(isis_interface_qualify_to_send_hellos(intf)){
@@ -176,5 +178,19 @@ isis_interface_qualify_to_send_hellos(interface_t *intf){
 	
 }
 
-
+void
+isis_show_interface_protocol_state(interface_t *intf){
+	
+	isis_intf_info_t *intf_info = NULL;
+	intf_info = ISIS_INTF_INFO(intf);
+	
+	PRINT_TABS(1);
+	printf("hello interval: %d sec, Intf Cost: %d\n", intf_info->hello_interval, intf_info->cost);
+	PRINT_TABS(1);
+	printf("hello Transmission: %s\n", isis_node_intf_is_enabled(intf) ? "On" : "Off");
+	
+	
+	
+	
+}
 

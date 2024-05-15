@@ -2,6 +2,8 @@
 #ifndef __ISIS_INTF__
 #define __ISIS_INTF__
 
+
+typedef struct isis_adjacency_ isis_adjacency_t;
 typedef struct isis_intf_info_ {
 
 	/* Interface cost */
@@ -12,6 +14,9 @@ typedef struct isis_intf_info_ {
 	
 	/* Transmission hello timer*/
 	timer_event_handle *hello_xmit_timer;
+	
+	/* Pointer to the adjacency object*/
+	isis_adjacency_t *adjacency;
 	
 	
 
@@ -49,6 +54,9 @@ isis_interface_qualify_to_send_hellos(interface_t *intf);
 
 void 
 isis_show_intf_protocol_state(interface_t *intf);
+
+void
+isis_show_interface_protocol_state(interface_t *intf); 
 
 
 #endif
