@@ -87,7 +87,9 @@ isis_update_interface_adjacency_from_hello(interface_t *iif,byte *hello_tlv_buff
 		}
 	
 	
-	}ITERATE_TLV_END(hello_tlv_buffer, tlv_type, tlv_len, tlv_value, tlv_buff_size)
+	}ITERATE_TLV_END(hello_tlv_buffer, tlv_type, tlv_len, tlv_value, tlv_buff_size);
+	
+	
 	
 }
 
@@ -112,4 +114,147 @@ isis_show_adjacency(isis_adjacency_t *adjacency, uint8_t tab_spaces){
 	printf("State: %s HT: %d sec Cost: %d\n\n", isis_adj_state_str(adjacency->adj_state), adjacency->hold_time,adjacency->cost);
 	
 	
+}
+
+
+
+/* TIMER APIs*/
+
+static void
+isis_timer_expire_delete_adjacency_cb(void *arg, uint32_t arg_size){
+	
+	/* This function will be called when the Delete Timer expires*/
+	if(!arg) return;
+	isis_adjacency_t *adjacency = (isis_adjacency_t *)arg;
+	
+	/* Removing the link to the adjacency from the interface info variable*/
+	interface_t *intf = adjacency->intf;
+	isis_intf_info_t *intf_info = ISIS_INTF_INFO(intf);
+	intf_info->adjacency = NULL;
+	
+	/* De-register the delete_timer*/
+	timer_de_register_app_event(adjacency->delete_timer);
+	adjacency->delete_timer = NULL;
+	assert(!adjacency->expiry_timer);
+	
+	/* deleting adjacency variable from memory*/
+	free(adjacency);
+	
+}
+
+static void
+isis_adjacency_start_delete_timer(isis_adjacency_t *adjacency){
+	
+	if(adjacency->delete_timer) return;
+	
+	adjacency->delete_timer = timer_register_app_event(
+				node_get_timer_instance(adjacency->intf->att_node),
+				isis_timer_expire_delete_adjacency_cb,
+				(void *)adjacency,
+				sizeof(isis_adjacency_t),
+				ISIS_ADJ_DEFAULT_DELETE_TIME,
+				0);
+	
+}
+
+
+static void
+isis_adjacency_stop_delete_timer(isis_adjacency_t *adjacency){
+	
+	if(!adjacency->delete_timer) return;
+	
+	timer_de_register_app_event(adjacency->delete_timer);
+	adjacency->delete_timer = NULL;
+}
+
+static void
+isis_timer_expery_down_adjacency_cb(void *arg, uint32_t arg_size){
+	
+	if(!arg) return;
+	
+	isis_adjacency_t *adjacency = (isis_adjacency_t *)arg;
+	
+	timer_de_register_app_event(adjacency->expiry_timer);
+	adjacency->expiry_timer = NULL;
+	
+	isis_change_adjacency_state(adjacency, ISIS_ADJ_STATE_DOWN);
+	
+	
+}
+
+static void
+isis_adjacecy_start_expiry_timer(isis_adjacency_t *adjacency){
+	
+	if(!adjacency->expiry_timer) return;
+	
+	adjacency->expiry_timer = timer_register_app_event(
+				node_get_timer_instance(adjacency->intf->att_node),
+				isis_timer_expery_down_adjacency_cb,
+				(void *)adjacency, sizeof(isis_adjacency_t),
+				adjacency->hold_time * 1000,
+				0);
+	
+}
+
+static void
+isis_adjacency_stop_expiry_timer(isis_adjacency_t *adjacency){
+	
+	if(!adjacency->expiry_timer) return;
+	
+	timer_de_register_app_event(adjacency->expiry_timer);
+	adjacency->expiry_timer = NULL;
+	
+}
+
+static void
+isis_adjacency_refresh_expiry_timer(isis_adjacency_t *adjacency){
+	
+	assert(adjacency->expiry_timer);
+	
+	timer_reschedule(adjacency->expiry_timer,
+					adjacency->hold_time * 1000);
+	
+}
+
+
+void
+isis_change_adjacency_state(isis_adjacency_t *adjacency, isis_adj_state_t new_adj_state){
+	
+	
+}
+
+
+void
+isis_adjacency_set_uptime(isis_adjacency_t *adjacency){
+	
+	assert(adjacency->adj_state == ISIS_ADJ_STATE_UP);
+	
+	adjacency->uptime = time(NULL);
+	
+}
+
+void
+isis_delete_adjacency(isis_adjacency_t *adjacency){
+	
+	/* Removing the link to the adjacency from the interface info variable*/
+	interface_t *intf = adjacency->intf;
+	isis_intf_info_t *intf_info = ISIS_INTF_INFO(intf);
+	assert(intf_info);
+	intf_info->adjacency = NULL;
+	
+	/* deleting adjacency variable from memory*/
+	free(adjacency);
+	
+}
+
+void
+print_current_system_time( void ){
+	
+	time_t *seconds = time(NULL);
+	struct tm *info;
+    
+    info = localtime(&seconds);
+    
+    printf("Current local time and date: %s\n", asctime(info));
+
 }

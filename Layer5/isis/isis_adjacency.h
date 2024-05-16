@@ -81,6 +81,34 @@ isis_update_interface_adjacency_from_hello(interface_t *iff,byte *hello_tlv_buff
 void
 isis_show_adjacency( isis_adjacency_t *adjacency, uint8_t tab_spaces);
 
+static void
+isis_adjacency_start_delete_timer(isis_adjacency_t *adjacency);
 
+static void
+isis_adjacency_stop_delete_timer(isis_adjacency_t *adjacency);
+
+static void
+isis_adjacecy_start_expiry_timer(isis_adjacency_t *adjacency);
+
+static void
+isis_adjacency_stop_expiry_timer(isis_adjacency_t *adjacency);
+
+static void
+isis_timer_expire_delete_adjacency_cb(void *arg, uint32_t arg_size);
+
+static void
+isis_timer_expery_down_adjacency_cb(void *arg, uint32_t arg_size);
+
+void
+isis_change_adjacency_state(isis_adjacency_t *adjacency, isis_adj_state_t new_adj_state);
+
+void
+isis_adjacency_set_uptime(isis_adjacency_t *adjacency) ;
+
+void
+print_current_system_time( void );
+
+void
+isis_delete_adjacency(isis_adjacency_t *adjacency) ;
 
 #endif
