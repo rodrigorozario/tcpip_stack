@@ -3,6 +3,7 @@
 #include "isis_rtr.h"
 #include "isis_const.h"
 #include "isis_pkt.h"
+#include "isis_adjacency.h"
 
 bool
 isis_node_intf_is_enabled(interface_t *intf){
@@ -54,6 +55,9 @@ isis_disable_protocol_on_interface(interface_t *intf){
 	if(!intf_info) return;
 	
 	isis_stop_sending_hellos(intf);
+	
+	/* delete adjacency */
+	isis_delete_adjacency(intf_info->adjacency);
 	
 	free(intf_info);
 	

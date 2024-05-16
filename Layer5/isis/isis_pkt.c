@@ -79,7 +79,7 @@ isis_process_hello_pkt(node_t *node, interface_t *iif, ethernet_hdr_t *hello_eth
 	return;
 	
 	bad_hello:
-	//printf("Hello pkt rejected, %s %s\n", node->node_name, iif->if_name);
+	printf("Hello pkt rejected, %s %s\n", node->node_name, iif->if_name);
 
 	
 }

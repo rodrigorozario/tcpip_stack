@@ -88,7 +88,7 @@ static void
 isis_adjacency_stop_delete_timer(isis_adjacency_t *adjacency);
 
 static void
-isis_adjacecy_start_expiry_timer(isis_adjacency_t *adjacency);
+isis_adjacency_start_expiry_timer(isis_adjacency_t *adjacency);
 
 static void
 isis_adjacency_stop_expiry_timer(isis_adjacency_t *adjacency);
@@ -110,5 +110,9 @@ print_current_system_time( void );
 
 void
 isis_delete_adjacency(isis_adjacency_t *adjacency) ;
+
+isis_adj_state_t
+isis_get_next_adj_state_on_receiving_next_hello(
+			isis_adjacency_t *adjacency);
 
 #endif

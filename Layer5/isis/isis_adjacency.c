@@ -2,6 +2,7 @@
 #include "isis_adjacency.h"
 #include "isis_const.h"
 #include "isis_intf.h"
+#include "isis_rtr.h"
 
 
 void
@@ -23,6 +24,7 @@ isis_update_interface_adjacency_from_hello(interface_t *iif,byte *hello_tlv_buff
 		new_adj = true;
 		adjacency->adj_state = ISIS_ADJ_STATE_DOWN;
 		isis_intf_info->adjacency = adjacency;
+		isis_adjacency_start_delete_timer(adjacency);
 	}
 	
 	byte tlv_type, tlv_len, *tlv_value = NULL;
@@ -89,7 +91,22 @@ isis_update_interface_adjacency_from_hello(interface_t *iif,byte *hello_tlv_buff
 	
 	}ITERATE_TLV_END(hello_tlv_buffer, tlv_type, tlv_len, tlv_value, tlv_buff_size);
 	
-	
+	if(!new_adj){
+		/* received a good hello packet and the adj is not new*/
+		
+		isis_adj_state_t next_state = isis_get_next_adj_state_on_receiving_next_hello(adjacency);
+		//printf("Node %s | Int %s - %u -> %u\n", iif->att_node,adjacency->intf,adjacency->adj_state,next_state);
+		
+		isis_node_info_t *isis_node_info = ISIS_NODE_INFO(iif->att_node);
+		if(next_state == ISIS_ADJ_STATE_UP && adjacency->adj_state != ISIS_ADJ_STATE_UP){
+			isis_node_info->adj_up_count += 1;
+		}
+		if(next_state != ISIS_ADJ_STATE_UP && adjacency->adj_state == ISIS_ADJ_STATE_UP){
+			isis_node_info->adj_up_count -=1;
+		}
+		
+		isis_change_adjacency_state(adjacency, next_state);
+	}
 	
 }
 
@@ -112,6 +129,33 @@ isis_show_adjacency(isis_adjacency_t *adjacency, uint8_t tab_spaces){
 	
 	PRINT_TABS(tab_spaces);
 	printf("State: %s HT: %d sec Cost: %d\n\n", isis_adj_state_str(adjacency->adj_state), adjacency->hold_time,adjacency->cost);
+	
+	PRINT_TABS(tab_spaces);
+	if(adjacency->expiry_timer){
+		
+		printf("Expire Timer Remaining: %u msec\n",
+				wt_get_remaining_time(adjacency->expiry_timer));
+	}else{
+		
+		printf("Expire Timer: Nil\n");
+	}
+	
+	PRINT_TABS(tab_spaces);
+	if(adjacency->delete_timer){
+		
+		printf("Delete Timer Remaining: %u msec\n",
+				wt_get_remaining_time(adjacency->delete_timer));
+	}else{
+		
+		printf("Delete Timer: Nil\n");
+	}
+	
+	/* Print Uptime*/
+	if(adjacency->adj_state == ISIS_ADJ_STATE_UP){
+		PRINT_TABS(tab_spaces);
+		printf("Up Time: %s\n", hrs_min_sec_format(
+					(unsigned int)difftime(time(NULL),adjacency->uptime)));
+	}
 	
 	
 }
@@ -183,9 +227,9 @@ isis_timer_expery_down_adjacency_cb(void *arg, uint32_t arg_size){
 }
 
 static void
-isis_adjacecy_start_expiry_timer(isis_adjacency_t *adjacency){
+isis_adjacency_start_expiry_timer(isis_adjacency_t *adjacency){
 	
-	if(!adjacency->expiry_timer) return;
+	if(adjacency->expiry_timer) return;
 	
 	adjacency->expiry_timer = timer_register_app_event(
 				node_get_timer_instance(adjacency->intf->att_node),
@@ -220,6 +264,60 @@ isis_adjacency_refresh_expiry_timer(isis_adjacency_t *adjacency){
 void
 isis_change_adjacency_state(isis_adjacency_t *adjacency, isis_adj_state_t new_adj_state){
 	
+	isis_adj_state_t old_adj_state = adjacency->adj_state;
+	
+	switch(old_adj_state){
+		
+		case ISIS_ADJ_STATE_DOWN:
+			
+			switch(new_adj_state){
+				case ISIS_ADJ_STATE_DOWN:
+					break;
+				case ISIS_ADJ_STATE_INIT:
+					adjacency->adj_state = new_adj_state;
+					isis_adjacency_stop_delete_timer(adjacency);
+					isis_adjacency_start_expiry_timer(adjacency);
+					break;
+				case ISIS_ADJ_STATE_UP:
+					break;
+				default:;
+			}
+		case ISIS_ADJ_STATE_INIT:
+			
+			switch(new_adj_state){
+				case ISIS_ADJ_STATE_DOWN:
+					adjacency->adj_state = new_adj_state;
+					isis_adjacency_stop_expiry_timer(adjacency);
+					isis_adjacency_start_delete_timer(adjacency);
+					break;
+				case ISIS_ADJ_STATE_INIT:
+					break;
+				case ISIS_ADJ_STATE_UP:
+					adjacency->adj_state = new_adj_state;
+					isis_adjacency_refresh_expiry_timer(adjacency);
+					isis_adjacency_set_uptime(adjacency);
+					break;
+				default:;
+			}
+			
+		case ISIS_ADJ_STATE_UP:
+			
+			switch(new_adj_state){
+				case ISIS_ADJ_STATE_DOWN:
+					adjacency->adj_state = new_adj_state;
+					isis_adjacency_stop_expiry_timer(adjacency);
+					isis_adjacency_start_delete_timer(adjacency);
+					break;
+				case ISIS_ADJ_STATE_INIT:
+					break;
+				case ISIS_ADJ_STATE_UP:
+					isis_adjacency_refresh_expiry_timer(adjacency);
+					break;
+				default:;
+			}
+			
+		default:;
+	}
 	
 }
 
@@ -242,6 +340,9 @@ isis_delete_adjacency(isis_adjacency_t *adjacency){
 	assert(intf_info);
 	intf_info->adjacency = NULL;
 	
+	isis_adjacency_stop_expiry_timer(adjacency);
+	isis_adjacency_stop_delete_timer(adjacency);
+	
 	/* deleting adjacency variable from memory*/
 	free(adjacency);
 	
@@ -257,4 +358,21 @@ print_current_system_time( void ){
     
     printf("Current local time and date: %s\n", asctime(info));
 
+}
+
+isis_adj_state_t
+isis_get_next_adj_state_on_receiving_next_hello(
+			isis_adjacency_t *adjacency){
+	
+	switch(adjacency->adj_state){
+		
+		case ISIS_ADJ_STATE_DOWN:
+			return ISIS_ADJ_STATE_INIT;
+		case ISIS_ADJ_STATE_INIT:
+			return ISIS_ADJ_STATE_UP;
+		case ISIS_ADJ_STATE_UP:
+			return ISIS_ADJ_STATE_UP;
+		default:;
+	}
+	
 }

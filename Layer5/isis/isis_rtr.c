@@ -26,6 +26,8 @@ isis_init(node_t *node) {
 	
 	isis_node_info = calloc(1,sizeof(isis_node_info_t));
 	
+	isis_node_info->adj_up_count = 0;
+	
 	node->node_nw_prop.isis_node_info = isis_node_info;
 	
 	tcp_stack_register_l2_pkt_trap_rule(node,isis_pkt_trap_rule,isis_pkt_receive);
@@ -59,17 +61,32 @@ isis_de_init(node_t *node){
 void isis_show_node_protocol_state(node_t *node){
 	printf("ISIS Protocol: %s\n", isis_is_protocol_enable_on_node(node) ? "Enable" : "Disable");
 	
+	if (!isis_is_protocol_enable_on_node(node) ) return;
+	
+	/*Print node information: adj count*/
+	isis_node_info_t *isis_node_info = ISIS_NODE_INFO(node);
+	printf("Adjacencies UP: %d\n",isis_node_info->adj_up_count);
+		
 	interface_t *interface = NULL;
 	ITERATE_NODE_INTERFACES_BEGIN(node,interface){
 		printf("%s : %s", interface->if_name, isis_node_intf_is_enabled(interface) ? "Enable\n" : "Disable\n");
-		isis_show_interface_protocol_state(interface);
 		
-		isis_intf_info_t *isis_intf_info = ISIS_INTF_INFO(interface);
-		isis_adjacency_t *adjacency = isis_intf_info->adjacency;
+		if(isis_node_intf_is_enabled(interface)){
+			isis_show_interface_protocol_state(interface);
+			
+			isis_intf_info_t *isis_intf_info = ISIS_INTF_INFO(interface);
+			isis_adjacency_t *adjacency = isis_intf_info->adjacency;
 		
-		PRINT_TABS(1)
-		printf("Adjacencies:\n");
-		isis_show_adjacency(adjacency, 2);
+			if(adjacency){
+				PRINT_TABS(1)
+				printf("Adjacencies:\n");
+				isis_show_adjacency(adjacency, 2);
+			}
+		}
+		
+		
+		
+		
 					
 	}ITERATE_NODE_INTERFACES_END(node,interface);
 

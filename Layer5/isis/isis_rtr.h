@@ -6,7 +6,7 @@
 
 typedef struct isis_node_info_{
  // ...
-
+	uint16_t adj_up_count; 
 } isis_node_info_t;
 
 typedef struct isis_timer_data_ {
