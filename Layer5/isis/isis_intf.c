@@ -66,7 +66,7 @@ isis_disable_protocol_on_interface(interface_t *intf){
 }
 
 void isis_show_intf_protocol_state(interface_t *intf){
-	printf("%s %s\n",intf->if_name, isis_node_intf_is_enabled(intf) ? "Enable" : "Disable");
+	printf("%s %s\n",intf->if_name, isis_node_intf_is_enabled(intf) ? "ENable" : "DIsable");
 
 }
 
@@ -77,6 +77,10 @@ isis_init_isis_intf_info(interface_t *intf){
 	memset(isis_intf_info,0,sizeof(isis_intf_info_t));
 	isis_intf_info->cost = ISIS_DEFAULT_INTF_COST;
 	isis_intf_info->hello_interval = ISIS_DEFAULT_HELLO_INTERVAL;
+	isis_intf_info->good_hello_pkt_recvd = 0;
+	isis_intf_info->bad_hello_pkt_recvd = 0;
+	isis_intf_info->hello_pkt_sent = 0;
+	
 }
 
 
@@ -95,6 +99,7 @@ isis_transmit_hello(void *arg, uint32_t arg_size){
 	
 	send_pkt_out(hello_pkt, pkt_size,intf);
 	
+	ISIS_INTF_INCREMENT_STATS(intf, hello_pkt_sent);
 	//printf("hello sent!\n");
 	
 }
@@ -193,8 +198,18 @@ isis_show_interface_protocol_state(interface_t *intf){
 	PRINT_TABS(1);
 	printf("hello Transmission: %s\n", isis_node_intf_is_enabled(intf) ? "On" : "Off");
 	
+	PRINT_TABS(1);
+	printf("Stats:\n");
+	
+	PRINT_TABS(2);
+	printf("> good_hello_pkt_recvd: %u\n", intf_info->good_hello_pkt_recvd);
+	PRINT_TABS(2);
+	printf("> bad_hello_pkt_recvd: %u\n", intf_info->bad_hello_pkt_recvd);
+	PRINT_TABS(2);
+	printf("> hello_pkt_sent: %u\n", intf_info->hello_pkt_sent);
 	
 	
 	
 }
+
 

@@ -832,3 +832,103 @@ conf node R2 proto isis /
 int eth3
 cd
 show node R1 proto isis
+show ?
+?
+/
+.
+?
+/
+.
+show node R1 protocol isis interface
+conf node R1 proto isis
+show node R1 protocol isis interface
+conf node R1 proto isis int eth2
+show node R1 proto isis interface
+show node R1 proto isis interface
+show node R1 proto isis interface
+show node R1 proto isis interface
+show node R1 proto isis interface
+show node R1 proto isis interface
+show node R1 proto isis interface
+show node R1 proto isis int	
+conf node R1 proto isis /
+int eth2
+cd
+show node R1 proto isis
+show node R1 proto isis interface
+conf node R2 proto isis /
+int eth3
+cd
+show node R1 proto isis
+show node R1 proto isis interface
+show node R1 proto isis interface
+show node R1 proto isis interface
+show node R1 proto isis interface
+show node R1 proto isis interface
+show node R1 proto isis interface
+show node R1 proto isis interface
+show node R1 proto isis interface
+show node R1 proto isis interface
+conf node R1 proto isis /
+int eth2
+cd
+conf node R2 proto isis /
+int eth3
+cd
+show node R1 proto isis
+show node R1 proto isis
+conf node R1 proto isis /
+int eth2
+cd
+conf node R2 proto isis /
+int eth3
+cd
+show node R1 proto isis int
+conf node R1 proto isis /
+int eth2
+cd
+conf node R2 proto isis /
+int eth3
+cd
+show node R1 proto isi
+conf node R1 proto isis /
+int eth2
+cd
+conf node R2 proto isis /
+int eth3
+cd
+conf node R1 proto isis /
+int eth2
+cd
+conf node R2 proto isis /
+int eth3
+cd
+show node R1 proto isis
+conf node R1 proto isis /
+int eth2
+cd
+conf node R2 prot isis /
+int eth3
+cd
+show node R1 proto isis
+show node R1 proto isis inte
+conf node R1 proto isis /
+int eth2
+cd
+conf node R2 proto isis /
+int eth3
+cd
+show node R1 proto isis
+show node R1 proto isis int
+show node R1 proto isis
+show node R1 proto isis
+show node R2 proto isis
+show node R2 proto isis
+conf node R1 proto isis /
+int all
+cd
+conf node R2 proto isis /
+int all
+cd
+show node R1 proto isis
+show node R2 proto isis

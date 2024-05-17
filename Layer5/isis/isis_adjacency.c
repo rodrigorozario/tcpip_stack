@@ -108,6 +108,8 @@ isis_update_interface_adjacency_from_hello(interface_t *iif,byte *hello_tlv_buff
 		isis_change_adjacency_state(adjacency, next_state);
 	}
 	
+	ISIS_INTF_INCREMENT_STATS(iif, good_hello_pkt_recvd);
+	
 }
 
 
@@ -126,6 +128,15 @@ isis_show_adjacency(isis_adjacency_t *adjacency, uint8_t tab_spaces){
 	PRINT_TABS(tab_spaces);
 	if_ip = tcp_ip_covert_ip_n_to_p(adjacency->nbr_intf_ip, 0);
 	printf("Nbr intf ip: %s ifindex: %d\n", if_ip, adjacency->remote_if_index);
+	
+	PRINT_TABS(tab_spaces);
+	printf("Nbr Mac Addr: %02x:%02x:%02x:%02x:%02x:%02x\n", 
+            adjacency->nbr_mac.mac[0], 
+            adjacency->nbr_mac.mac[1], 
+            adjacency->nbr_mac.mac[2], 
+            adjacency->nbr_mac.mac[3], 
+            adjacency->nbr_mac.mac[4], 
+            adjacency->nbr_mac.mac[5]);
 	
 	PRINT_TABS(tab_spaces);
 	printf("State: %s HT: %d sec Cost: %d\n\n", isis_adj_state_str(adjacency->adj_state), adjacency->hold_time,adjacency->cost);

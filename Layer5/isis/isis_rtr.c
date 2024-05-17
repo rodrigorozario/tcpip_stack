@@ -72,7 +72,7 @@ void isis_show_node_protocol_state(node_t *node){
 		printf("%s : %s", interface->if_name, isis_node_intf_is_enabled(interface) ? "Enable\n" : "Disable\n");
 		
 		if(isis_node_intf_is_enabled(interface)){
-			isis_show_interface_protocol_state(interface);
+			//isis_show_interface_protocol_state(interface);
 			
 			isis_intf_info_t *isis_intf_info = ISIS_INTF_INFO(interface);
 			isis_adjacency_t *adjacency = isis_intf_info->adjacency;
@@ -82,14 +82,28 @@ void isis_show_node_protocol_state(node_t *node){
 				printf("Adjacencies:\n");
 				isis_show_adjacency(adjacency, 2);
 			}
+		}	
+	}ITERATE_NODE_INTERFACES_END(node,interface);
+
+}
+
+void
+isis_show_node_protocol_stats(node_t *node){
+	
+	
+	
+	interface_t *interface = NULL;
+	ITERATE_NODE_INTERFACES_BEGIN(node,interface){
+		if(isis_node_intf_is_enabled(interface)){
+			isis_intf_info_t *isis_intf_info = ISIS_INTF_INFO(interface);
+			printf("%s  H Tx: %u  H Rx: %u  BadH Rx: %u\n",interface->if_name,isis_intf_info->hello_pkt_sent,
+							isis_intf_info->good_hello_pkt_recvd,isis_intf_info->bad_hello_pkt_recvd);
 		}
-		
-		
-		
-		
 					
 	}ITERATE_NODE_INTERFACES_END(node,interface);
 
+	
+	
 }
 
 void

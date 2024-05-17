@@ -80,6 +80,7 @@ isis_process_hello_pkt(node_t *node, interface_t *iif, ethernet_hdr_t *hello_eth
 	
 	bad_hello:
 	printf("Hello pkt rejected, %s %s\n", node->node_name, iif->if_name);
+	ISIS_INTF_INCREMENT_STATS(iif, bad_hello_pkt_recvd);
 
 	
 }
@@ -139,12 +140,13 @@ isis_prepare_hello_pkt(interface_t *intf,size_t *hello_pkt_size){
 	isis_pkt_hdr_t *hello_pkt_hdr;
 	
 	uint32_t eth_hdr_payload_size = sizeof(isis_pkt_hdr_t) + 
-		(TLV_OVERHEAD_SIZE * 6) + NODE_NAME_SIZE +
+		(TLV_OVERHEAD_SIZE * 7) + NODE_NAME_SIZE +
 		4 +
 		4 +
 		4 +
 		4 +
-		4;
+		4 +
+		6;
 	
 	*hello_pkt_size = ETH_HDR_SIZE_EXCL_PAYLOAD +
 			eth_hdr_payload_size;
@@ -192,6 +194,10 @@ isis_prepare_hello_pkt(interface_t *intf,size_t *hello_pkt_size){
 	uint32_t cost = ISIS_INTF_COST(intf);
 	
 	temp = tlv_buffer_insert_tlv(temp,ISIS_TLV_METRIC_VAL,4,(byte *)&cost);
+	
+	/* Inserting 7th TLV: ISIS_TLV_IF_MAC */
+	
+	temp = tlv_buffer_insert_tlv(temp,ISIS_TLV_IF_MAC,6,IF_MAC(intf));
 	
 	
 	SET_COMMON_ETH_FCS(hello_eth_hdr,eth_hdr_payload_size,0);

@@ -99,7 +99,13 @@ isis_show_handler(param_t *param,
 					
 			}ITERATE_NODE_INTERFACES_END(node,interface);
 			break;
-			default: ;
+		case CMDCODE_SHOW_NODE_ISIS_PROTOCOL_INTERFACE:
+			if(!isis_is_protocol_enable_on_node(node)){
+				break;
+			}
+			isis_show_node_protocol_stats(node);
+			break;
+		default: ;
 	}
 
 			
@@ -224,6 +230,14 @@ int isis_show_cli_tree(param_t *param){
 	 init_param(&isis_proto, CMD, "isis", isis_show_handler, 0, INVALID, 0, "isis protocol");
 	 libcli_register_param(param, &isis_proto);
 	 set_param_cmd_code(&isis_proto, CMDCODE_SHOW_NODE_ISIS_PROTOCOL);
+	  {
+	 	/* show node <node-name> protocol isis interface */
+	 	static param_t interface;
+	 	init_param(&interface, CMD, "interface", isis_show_handler, 0, INVALID, 0, "interface");
+	 	libcli_register_param(&isis_proto, &interface);
+	 	set_param_cmd_code(&interface, CMDCODE_SHOW_NODE_ISIS_PROTOCOL_INTERFACE);
+	 	
+	 }
 	}
 	return 0;
 }

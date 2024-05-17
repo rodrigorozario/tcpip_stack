@@ -1,2 +1,6 @@
+isis_enable_protocol_on_interface (38) :R1:eth1:ISIS(CONFIG) : protocol is enabled on interface
 isis_enable_protocol_on_interface (38) :R1:eth2:ISIS(CONFIG) : protocol is enabled on interface
 isis_enable_protocol_on_interface (38) :R2:eth3:ISIS(CONFIG) : protocol is enabled on interface
+isis_enable_protocol_on_interface (38) :R2:eth8:ISIS(CONFIG) : protocol is enabled on interface
+isis_enable_protocol_on_interface (38) :R2:eth7:ISIS(CONFIG) : protocol is enabled on interface
+isis_enable_protocol_on_interface (38) :R2:eth4:ISIS(CONFIG) : protocol is enabled on interface
